@@ -12,12 +12,7 @@ logger = logging.getLogger("seed")
 # Ходим через nginx фронтенда, тот же origin, что и у SPA.
 BASE_URL = os.getenv("MARKETPLACE_URL", "http://localhost:8080")
 SEED_FILE = pathlib.Path(
-    os.getenv(
-        "SEED_FILE",
-        pathlib.Path(__file__)
-        .resolve()
-        .parent.parent / "seed.json"
-    )
+    os.getenv("SEED_FILE", pathlib.Path(__file__).resolve().parent.parent / "seed.json")
 )
 
 
@@ -30,9 +25,7 @@ async def register(client: httpx.AsyncClient, user: dict) -> None:
     resp = await client.post("/api/auth/register", json=user)
     if resp.status_code == 201:
         logger.info(
-            "registered user %s (user_id=%s)",
-            user["email"],
-            resp.json()["user_id"]
+            "registered user %s (user_id=%s)", user["email"], resp.json()["user_id"]
         )
     elif resp.status_code == 409:
         logger.info("user %s already exists, skipping", user["email"])
@@ -138,7 +131,8 @@ def _build_ad(item: dict, cities: list[str]) -> dict:
         "title": title,
         "description": (
             f"{title}. В отличном состоянии",
-            "есть все документы, возможен торг."),
+            "есть все документы, возможен торг.",
+        ),
         "price": max(0, base_price + random.randint(-jitter, jitter)),
         "category": category,
         "city": random.choice(cities),
@@ -193,7 +187,7 @@ async def main() -> None:
         created_by_user: dict[str, list[dict]] = {u["email"]: [] for u in users}
         for i, user in enumerate(users):
             token = tokens[user["email"]]
-            user_items = shuffled[i * ADS_PER_USER: (i + 1) * ADS_PER_USER]
+            user_items = shuffled[i * ADS_PER_USER : (i + 1) * ADS_PER_USER]
             for item in user_items:
                 ad = await create_ad(client, token, _build_ad(item, cities))
                 created_by_user[user["email"]].append(ad)
@@ -206,8 +200,7 @@ async def main() -> None:
         logger.info("=== ads: read ===")
         all_ads = await list_ads(client, limit=100)
         logger.info(
-            "GET /ads → total=%s, items=%s",
-            all_ads["total"], len(all_ads["items"])
+            "GET /ads → total=%s, items=%s", all_ads["total"], len(all_ads["items"])
         )
 
         for user in users:
@@ -251,10 +244,7 @@ async def main() -> None:
             res["total"],
         )
 
-        res = await search(client,
-                           min_price=10000,
-                           max_price=50000,
-                           sort="price_asc")
+        res = await search(client, min_price=10000, max_price=50000, sort="price_asc")
         logger.info(
             "GET /search?min_price=10000&max_price=50000&sort=price_asc → total=%s",
             res["total"],
